@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Charts - Admin Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #f0f4f8, #ffffff);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: #2c3e50;
+      color: white;
+      position: fixed;
+      top: 0;
+      left: -250px;
+      height: 100%;
+      overflow: auto;
+      transition: 0.3s;
+      z-index: 999;
+      padding-top: 20px;
+    }
+    .sidebar.open {
+      left: 0;
+    }
+    .sidebar-header {
+      text-align: center;
+      padding: 20px;
+      border-bottom: 1px solid #444;
+    }
+    .sidebar-header img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+    .sidebar a {
+      padding: 15px 25px;
+      display: block;
+      color: white;
+      text-decoration: none;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #34495e;
+    }
+
+    #toggleSidebar {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .container {
+      margin-left: 0;
+      padding: 40px;
+      width: 100%;
+      transition: 0.3s;
+    }
+    .sidebar.open ~ .container {
+      margin-left: 250px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 40px;
+    }
+
+    .chart-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      gap: 40px;
+    }
+
+    .chart-box {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      width: 45%;
+      min-width: 300px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 300px !important;
+    }
+
+    @media (max-width: 768px) {
+      .chart-container {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img src="/images/admin.jpg" alt="Admin">
+    <p th:text="${adminEmail}">admin@example.com</p>
+  </div>
+  <a href="/admin/dashboard">Dashboard</a>
+  <a href="/admin/charts" class="active">Show Charts</a>
+  <a th:href="@{/logout}">Logout</a>
+</div>
+
+<!-- Sidebar Toggle -->
+<div id="toggleSidebar">&#9776;</div>
+
+<!-- Main Chart Section -->
+<div class="container">
+  <h2>Alert Statistics</h2>
+  <div class="chart-container">
+    <div class="chart-box">
+      <h3 style="text-align:center;">Alert Status</h3>
+      <canvas id="alertChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3 style="text-align:center;">Daily Alerts</h3>
+      <canvas id="barChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  // Sidebar toggle
+  const sidebar = document.getElementById("sidebar");
+  document.getElementById("toggleSidebar").onclick = function () {
+    sidebar.classList.toggle("open");
+  };
+
+  // Chart 1: Pie Chart for Alert Status
+  fetch('/admin/alerts/stats')
+    .then(res => res.json())
+    .then(data => {
+      const ctx = document.getElementById('alertChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Pending', 'Resolved'],
+          datasets: [{
+            data: [data.pending, data.resolved],
+            backgroundColor: ['#f39c12', '#2ecc71']
+          }]
+        }
+      });
+    });
+
+  // Chart 2: Bar Chart for Daily Alerts
+  fetch('/admin/alerts/daily-stats')
+    .then(res => res.json())
+    .then(data => {
+      const ctx = document.getElementById('barChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(data),
+          datasets: [{
+            label: 'Alerts per Day',
+            data: Object.values(data),
+            backgroundColor: '#8e44ad'
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    });
+</script>
+
+</body>
+</html>

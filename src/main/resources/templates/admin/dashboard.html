@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Women Safety App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsApiKey}"></script>
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          background: linear-gradient(135deg, #FDEBEB, #FDEBF9);
+          font-family: 'Poppins', sans-serif;
+          min-height: 100vh;
+        }
+
+        .wrapper {
+          display: flex;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+          width: 250px;
+          background: #2c3e50;
+          color: white;
+          position: fixed;
+          top: 0;
+          left: -250px;
+          height: 100vh;
+          overflow-y: auto;
+          transition: left 0.3s;
+          z-index: 999;
+          padding-top: 20px;
+        }
+
+        .sidebar.open {
+          left: 0;
+        }
+
+        .sidebar-header {
+          text-align: center;
+          padding: 20px;
+          border-bottom: 1px solid #444;
+        }
+
+        .sidebar-header img {
+          width: 70px;
+          height: 70px;
+          border-radius: 50%;
+          margin-bottom: 10px;
+        }
+
+        .sidebar a {
+          padding: 15px 25px;
+          display: block;
+          color: white;
+          text-decoration: none;
+        }
+
+        .sidebar a:hover {
+          background: #34495e;
+        }
+
+        #toggleSidebar {
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          font-size: 24px;
+          cursor: pointer;
+          z-index: 1000;
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+          margin-left: 0;
+          padding: 40px;
+          width: 100%;
+          transition: margin-left 0.3s ease;
+        }
+
+        .container.shifted {
+          margin-left: 250px;
+        }
+
+        h2, h3 {
+          text-align: center;
+          margin-bottom: 20px;
+          color: #333;
+        }
+
+        form {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        form select, form button {
+          padding: 10px 20px;
+          border-radius: 25px;
+          border: none;
+          font-weight: 500;
+          font-family: 'Poppins', sans-serif;
+          margin: 0 8px;
+        }
+
+        form select {
+          background: rgba(255, 255, 255, 0.7);
+          color: #333;
+          box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        form button {
+          background: linear-gradient(to right, #f76b1c, #fad0c4);
+          color: white;
+          cursor: pointer;
+        }
+
+        .alert-cards {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 20px;
+        }
+
+        .card {
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(8px);
+          padding: 20px;
+          border-radius: 15px;
+          width: 280px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card p {
+          margin: 10px 0;
+          font-size: 14px;
+          color: #111;
+        }
+
+        .card strong {
+          color: #000;
+          font-weight: 500;
+        }
+
+        .resolve-form button {
+          margin-top: 10px;
+          padding: 6px 14px;
+          background: linear-gradient(to right, #ff7e5f, #feb47b);
+          border: none;
+          border-radius: 20px;
+          color: white;
+          cursor: pointer;
+          font-weight: 600;
+        }
+
+        .logout {
+          text-align: center;
+          margin-top: 30px;
+        }
+
+        .logout a button {
+          background: linear-gradient(to right, #ff7e5f, #feb47b);
+          border: none;
+          color: white;
+          padding: 12px 25px;
+          border-radius: 25px;
+          font-size: 16px;
+          cursor: pointer;
+          font-weight: 600;
+        }
+
+        /* Google Map Modal */
+        #mapModal {
+          display: none;
+          position: fixed;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          background-color: rgba(0, 0, 0, 0.7);
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+
+        #map {
+          width: 80vw;
+          height: 80vh;
+          border-radius: 10px;
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #closeBtn {
+          position: absolute;
+          top: 20px;
+          right: 30px;
+          font-size: 20px;
+          background: #fff;
+          padding: 6px 12px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+          .card {
+            width: 90%;
+          }
+        }
+
+        .view-alert-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #9C27B0, #E91E63, #3F51B5);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.view-alert-btn:hover {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  transform: translateY(-2px);
+}
+
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="/images/admin.jpg" alt="Admin">
+            <p th:text="${adminEmail}">admin@example.com</p>
+        </div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/charts">Show Charts</a>
+        <a th:href="@{/admin/users}">Manage Users</a>
+        <a th:href="@{/admin/change-password}">Change Password</a>
+
+        <a th:href="@{/logout}">Logout</a>
+
+        <a href="#" onclick="window.location.href='/admin/alerts/pdf'">Export Alerts as PDF</a>
+        <form th:action="@{/admin/alerts/clear-resolved}" method="post" style="margin: 10px 0;">
+            <button type="submit"
+                    style="background: none; border: none; color: white; font-size: 16px; cursor: pointer; padding: 0;"
+                    onmouseover="this.style.color='#e74c3c'"
+                    onmouseout="this.style.color='#333'"
+                    onclick="return confirm('Are you sure you want to delete all resolved alerts?')">
+                Clear Resolved Alerts
+            </button>
+        </form>
+
+    </div>
+
+    <!-- Sidebar Toggle Icon -->
+    <div id="toggleSidebar">&#9776;</div>
+
+    <!-- Main Container -->
+    <div class="container" id="mainContainer">
+        <h2>Welcome, Admin!</h2>
+        <h3>All User Alerts</h3>
+
+        <!-- Filter Form -->
+        <form th:action="@{/admin/dashboard}" method="get">
+            <label for="status">Filter by Status:</label>
+            <select name="status" id="status">
+                <option value="">All</option>
+                <option value="Pending" th:selected="${status == 'Pending'}">Pending</option>
+                <option value="Resolved" th:selected="${status == 'Resolved'}">Resolved</option>
+            </select>
+            <button type="submit">Filter</button>
+        </form>
+
+        <!-- Filter Message -->
+        <div th:if="${status}">
+            <p style="text-align: center;">Showing <b th:text="${status}"></b> alerts</p>
+        </div>
+
+        <!-- Alert Cards -->
+        <div class="alert-cards">
+            <div class="card" th:each="alert : ${alerts}">
+                <p><strong>ID:</strong> <span th:text="${alert.id}">1</span></p>
+                <p><strong>User:</strong> <span th:text="${alert.user.name}">User</span></p>
+                <p><strong>Phone:</strong> <span th:text="${alert.user.phone}">1234567890</span></p>
+                <p>
+                    <strong>Location:</strong>
+                    <button type="button"
+                            th:onclick="'showMap(' + ${alert.latitude} + ',' + ${alert.longitude} + ')'">
+                        View Map
+                    </button>
+                </p>
+                <p><strong>Time:</strong>
+                    <span th:text="${#temporals.format(alert.timestamp, 'dd-MM-yyyy HH:mm')}">Date</span>
+                </p>
+                <p><strong>Status:</strong> <span th:text="${alert.status}">Pending</span></p>
+
+                <div th:if="${alert.status != 'Resolved'}" class="resolve-form">
+                    <form th:action="@{/admin/resolve/{id}(id=${alert.id})}" method="post">
+                        <button type="submit">Resolve</button>
+                    </form>
+                </div>
+                <div th:if="${alert.status == 'Resolved'}">
+                    <p><strong>Action:</strong> <span>Resolved</span></p>
+                </div>
+
+                <a th:href="@{'/admin/users/' + ${alert.user.id} + '/alerts'}" class="view-alert-btn">View Alerts</a>
+
+
+            </div>
+        </div>
+
+        <!-- Logout -->
+        <div class="logout">
+            <a th:href="@{/logout}">
+                <button>Logout</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Google Map Modal -->
+<div id="mapModal">
+    <div id="closeBtn" onclick="closeMap()">✖ Close</div>
+    <div id="map"></div>
+</div>
+
+<audio id="alertSound" src="/sounds/alert.mp3" preload="auto"></audio>
+
+
+<!-- Scripts -->
+<script th:inline="javascript">
+    const sidebar = document.getElementById("sidebar");
+    const toggleBtn = document.getElementById("toggleSidebar");
+    const container = document.getElementById("mainContainer");
+
+    toggleBtn.onclick = function () {
+      sidebar.classList.toggle("open");
+      container.classList.toggle("shifted");
+    };
+
+    function showMap(lat, lng) {
+      const modal = document.getElementById('mapModal');
+      modal.style.display = 'flex';
+
+      setTimeout(() => {
+        const map = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: lat, lng: lng },
+          zoom: 15
+        });
+
+        new google.maps.Marker({
+          position: { lat: lat, lng: lng },
+          map: map,
+          title: "Alert Location"
+        });
+      }, 200);
+    }
+
+    function closeMap() {
+      document.getElementById('mapModal').style.display = 'none';
+      document.getElementById('map').innerHTML = "";
+    }
+
+    let pendingAlertCount = /*[[${pendingCount}]]*/ 0;
+
+    if (pendingAlertCount > 0) {
+        let playCount = 0;
+        const maxPlays = 3;
+        const interval = setInterval(() => {
+            if (playCount >= maxPlays) {
+                clearInterval(interval);
+                return;
+            }
+            document.getElementById('alertSound').play();
+            playCount++;
+        }, 5000); // Play every 5 seconds
+    }
+</script>
+</body>
+</html>

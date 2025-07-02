@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>User Dashboard - Women Safety App</title>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    .container {
+      display: flex;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      max-width: 1200px;
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    .left-panel {
+      flex: 1;
+      padding: 40px;
+    }
+    .right-panel {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.25);
+    }
+    .right-panel img {
+      max-width: 90%;
+      height: auto;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0); }
+    }
+    h2, h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    h2 span {
+      color: #f06292;
+      text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.7);
+    }
+    .alert-button {
+      display: block;
+      margin: 0 auto 30px auto;
+      padding: 14px 30px;
+      background: linear-gradient(to right, #FF9A8B, #FF6A88);
+      border: none;
+      color: white;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .alert-button:hover {
+      background: linear-gradient(to right, #FF6A88, #FF9A8B);
+    }
+    .alert-history {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .alert-card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 15px;
+      width: 280px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      color: #333;
+    }
+    .alert-card p {
+      margin: 10px 0;
+      font-size: 14px;
+    }
+    .alert-card strong {
+      color: #444;
+    }
+    .card-value {
+      color: #000;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .alert-card a {
+      text-decoration: none;
+      color: #000;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .logout {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .logout a button {
+      background: linear-gradient(to right, #FF9A8B, #FF6A88);
+      border: none;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+      }
+      .right-panel {
+        padding: 20px;
+      }
+    }
+
+    /* Sidebar styles */
+    .menu-icon {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      cursor: pointer;
+      color: #333;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background: #fff;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+      transition: left 0.3s ease;
+      padding: 30px 20px;
+      z-index: 999;
+    }
+    .sidebar.active {
+      left: 0;
+    }
+    .sidebar h3 {
+      margin-bottom: 20px;
+      color: #ff6a88;
+    }
+    .sidebar p {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .sidebar a {
+      display: block;
+      margin: 10px 0;
+      color: #333;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      color: #ff6a88;
+    }
+  </style>
+
+
+</head>
+<body>
+
+<!-- Sidebar and Toggle -->
+<div class="menu-icon" onclick="toggleSidebar()">☰</div>
+<div class="sidebar" id="sidebar">
+  <h3 th:text="${user.name}">User Name</h3>
+  <p th:text="${user.email}">user@example.com</p>
+  <a th:href="@{/user/edit}">✏️ Edit Profile</a>
+  <a th:href="@{/user/view}">👁️ View Profile</a>
+  <a th:href="@{/logout}">🚪 Logout</a>
+  <a th:href="@{/user/delete}" onclick="return confirm('Are you sure you want to delete your account? This cannot be undone.')">
+    ❌ Delete Account
+  </a>
+
+</div>
+
+<!-- Main Container -->
+<div class="container">
+  <div class="left-panel">
+    <h2>Welcome, <span th:text="${user.name}">User</span>!</h2>
+    <button class="alert-button" onclick="sendAlert()">Send Emergency Alert</button>
+
+    <!-- Notification Icon -->
+    <div style="position: absolute; top: 20px; right: 20px; cursor: pointer;" onclick="toggleNotification()">
+      🔔
+    </div>
+
+    <!-- Hidden Notification Popup -->
+    <div id="notificationPopup" style="display:none; position:absolute; top:60px; right:20px; background:white; color:black; padding:15px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.2); z-index:1000;">
+      <span id="notificationMessage" th:text="${notification}" style="font-weight: 500;"></span>
+    </div>
+
+
+
+    <h3>Your Alert History</h3>
+    <div class="alert-history">
+      <div class="alert-card" th:each="alert : ${alerts}" th:id="'alert-' + ${alert.id}">
+        <p style="text-align: right; margin: 0;">
+          <span style="cursor: pointer; color: red; font-size: 18px;"
+                th:onclick="'removeCard(' + ${alert.id} + ')'"
+                title="Remove Alert">🗑️</span>
+        </p>
+
+        <p><strong>ID:</strong> <span class="card-value" th:text="${alert.id}">1</span></p>
+        <p><strong>Location:</strong>
+          <a th:href="'https://www.google.com/maps?q=' + ${alert.latitude} + ',' + ${alert.longitude}" target="_blank">View Location</a>
+        </p>
+        <p><strong>Timestamp:</strong> <span class="card-value" th:text="${#temporals.format(alert.timestamp, 'dd-MM-yyyy HH:mm')}">Date</span></p>
+        <p><strong>Status:</strong> <span class="card-value" th:text="${alert.status}">Pending</span></p>
+      </div>
+
+
+    </div>
+
+    <div class="logout">
+      <a th:href="@{/logout}">
+        <button>Logout</button>
+      </a>
+    </div>
+  </div>
+  <div class="right-panel">
+    <img src="/images/women.png" alt="Animated Girl for Women Safety">
+  </div>
+</div>
+
+
+<script>
+  function sendAlert() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        fetch('/user/sendAlert', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `latitude=${latitude}&longitude=${longitude}`
+        })
+        .then(response => response.text())
+        .then(data => {
+          alert('Alert sent successfully!');
+          location.reload();
+        })
+        .catch(err => alert('Error sending alert'));
+      });
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+  }
+
+  function removeCard(id) {
+  const card = document.getElementById("alert-" + id);
+  if (card) {
+    card.remove();
+  }
+}
+
+  function toggleNotification() {
+    const popup = document.getElementById('notificationPopup');
+
+    if (popup.style.display === 'none') {
+      popup.style.display = 'block';
+
+      // Call backend to clear session notification
+      fetch('/user/notification/viewed', {
+        method: 'POST'
+      });
+    } else {
+      popup.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>
